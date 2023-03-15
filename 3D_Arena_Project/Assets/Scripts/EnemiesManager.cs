@@ -10,9 +10,18 @@ public class EnemiesManager : MonoBehaviour
     [SerializeField] Transform spawner;
     [SerializeField] Transform player;
     [SerializeField] float SpawnCooldown = 5; //seconds
+    const float MinSpawnCooldown = 2;
+    Energy playerEnergy;
+    Health playerHealth;
     int kills=0;
-    public static UnityAction<int> OnEnemyKill;
+    public static UnityAction<int, int> OnEnemyKill;
+    public static UnityAction Ultimate;
     float StartTimerTime;
+    void Awake()
+    {
+        playerEnergy = player.gameObject.GetComponent<Energy>();
+        playerHealth = player.gameObject.GetComponent<Health>();
+    }
     void Srart()
     {
         StartTimerTime = Time.time;
@@ -29,17 +38,48 @@ public class EnemiesManager : MonoBehaviour
                 Enemy.GetComponent<Red>().target = player;
             }
             StartTimerTime = Time.time;
+            if(SpawnCooldown > MinSpawnCooldown){
+                SpawnCooldown--;
+            }
         }
     }
     void OnEnable(){
-        OnEnemyKill += KillCount;
+        OnEnemyKill += EnemyKill;
+        Ultimate += KillAllEnemies;
     }
     void OnDisable(){
-        OnEnemyKill -= KillCount;
+        OnEnemyKill -= EnemyKill;
+        Ultimate -= KillAllEnemies;
     }
-    void KillCount(int modifier){
+    void EnemyKill(int enemyId, int modifier){
         kills++;
-        Debug.Log("kills: " + kills + ", modifier: " + modifier);
+        Debug.Log("kills: " + kills + ", enemyID: " + enemyId + ", modifier: " + modifier);
+        //Add energy points to player depending on enemy id
+        switch(enemyId){
+            case 0:
+                playerEnergy.AddEnergy(50);
+                break;
+            case 1:
+                playerEnergy.AddEnergy(15);
+                break;
+            default:
+                break;
+        }
+        //Process modifier kills
+        switch(modifier){
+            case 0:
+                break;
+            case 1:
+                playerHealth.Heal(100);
+                break;
+            default:
+                break;
+        }
+    }
+    void KillAllEnemies(){
+        for(int i = 0; i < transform.childCount; i++){
+            Destroy(transform.GetChild(i).gameObject);
+        }
     }
     void OnDrawGizmos(){
         Gizmos.color = Color.red;

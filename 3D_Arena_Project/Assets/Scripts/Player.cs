@@ -18,7 +18,9 @@ public class Player : MonoBehaviour
     InputAction Move;
     InputAction Fire;
     InputAction Look;
+    InputAction Ultimate;
     Health health;
+    Energy energy;
     //InputAction LookField;
     //bool LookFieldPressed;
     int TouchId;
@@ -26,6 +28,7 @@ public class Player : MonoBehaviour
     public float CameraXSensetivity = 0.6f;
     [Range(0, 2)]
     public float CameraYSensetivity = 0.2f;
+    [SerializeField] float EnergyToUlt = 100;
     public GameObject Bullet;
     float CameraXAngle;
     const float CameraMinXAngle = 45;
@@ -35,26 +38,30 @@ public class Player : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         health = GetComponent<Health>();
+        energy = GetComponent<Energy>();
         playerInput = GetComponent<PlayerInput>();
         Move = playerInput.actions["Move"];
         Fire = playerInput.actions["Fire"];
         Look = playerInput.actions["Look"];
+        Ultimate = playerInput.actions["Ultimate"];
         //LookField = playerInput.actions["LookField"];
     }
     void OnEnable(){
-        EnhancedTouchSupport.Enable();
+        // EnhancedTouchSupport.Enable();
         Move.canceled += StopPlayer;
         // LookField.performed += FieldPressed;
         // LookField.canceled += FieldReleased;
         Fire.performed += Shoot;
+        Ultimate.performed += DoCoolStuff;
         health.Die += Die;
     }
     void OnDisable(){
-        EnhancedTouchSupport.Disable();
+        // EnhancedTouchSupport.Disable();
         Move.canceled -= StopPlayer;
         // LookField.performed -= FieldPressed;
         // LookField.canceled -= FieldReleased;
         Fire.performed -= Shoot;
+        Ultimate.performed += DoCoolStuff;
         health.Die -= Die;
     }
     void Update(){
@@ -104,10 +111,16 @@ public class Player : MonoBehaviour
         LookFieldPressed = false;
     }*/
     void Shoot(InputAction.CallbackContext context){
-        var b = Instantiate(Bullet, cam.transform.position + (cam.transform.forward * 0.1f), cam.transform.rotation);
+        var b = Instantiate(Bullet, cam.transform.position + (cam.transform.forward * 0.1f), cam.transform.rotation, BulletContainer.bulletContainer);
         b.GetComponent<Rigidbody>().AddForce(b.transform.forward * 10, ForceMode.VelocityChange);
         b.GetComponent<Bullet>().OwnerHelthPercentage = health.health/health.MaxHealth;
         Destroy(b,3);
+    }
+    void DoCoolStuff(InputAction.CallbackContext context){
+        if(energy.energy >= EnergyToUlt){
+            energy.RemoveEnergy(EnergyToUlt);
+            EnemiesManager.Ultimate();
+        }
     }
     void Die(int modifier){
         Debug.Log("Player Dead");

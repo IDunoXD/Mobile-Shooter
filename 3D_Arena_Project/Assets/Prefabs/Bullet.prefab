@@ -241,3 +241,5 @@ MonoBehaviour:
     m_Bits: 128
   gravity: 2
   damage: 25
+  modifier: 0
+  OwnerHelthPercentage: 0

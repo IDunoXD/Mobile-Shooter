@@ -9,6 +9,7 @@ public class Red : MonoBehaviour
     Health health;
     [SerializeField] int damage;
     [SerializeField] int modifier = 0;
+    [SerializeField] int enemyId = 1;
     public Transform target;
 	public LayerMask DestroyOnContactLayer;
 
@@ -28,7 +29,7 @@ public class Red : MonoBehaviour
         agent.SetDestination(target.position);
     }
     void Die(int modifier){
-        EnemiesManager.OnEnemyKill(modifier);
+        EnemiesManager.OnEnemyKill(enemyId, modifier);
         Destroy(gameObject);
     }   
     void OnTriggerEnter(Collider other){
