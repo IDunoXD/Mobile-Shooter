@@ -14,6 +14,7 @@ public class Player : MonoBehaviour
     NavMeshAgent agent;
     RaycastHit hit;
     [SerializeField] Camera cam;
+    [SerializeField] LayerMask AcceptableCollisionLayer;
     PlayerInput playerInput;
     InputAction Move;
     InputAction Fire;
@@ -29,8 +30,10 @@ public class Player : MonoBehaviour
     [Range(0, 2)]
     public float CameraYSensetivity = 0.2f;
     [SerializeField] float EnergyToUlt = 100;
+    [SerializeField] float TeleportationCooldown = 1f; //seconds
     public GameObject Bullet;
     float CameraXAngle;
+    float LastTeleportTime;
     const float CameraMinXAngle = 45;
     const float CameraMaxXAngle = 315;
     const float CameraRotationSpeed = 360; //degrees per second
@@ -44,6 +47,7 @@ public class Player : MonoBehaviour
         Fire = playerInput.actions["Fire"];
         Look = playerInput.actions["Look"];
         Ultimate = playerInput.actions["Ultimate"];
+        LastTeleportTime = -TeleportationCooldown;
         //LookField = playerInput.actions["LookField"];
     }
     void OnEnable(){
@@ -123,7 +127,18 @@ public class Player : MonoBehaviour
         }
     }
     void Die(int modifier){
+        GameManager.OnGameOver?.Invoke();
         Debug.Log("Player Dead");
+    }
+    void OnTriggerEnter(Collider other){
+        //Teleport is rech arena edge
+        if(AcceptableCollisionLayer == (AcceptableCollisionLayer | (1 << other.gameObject.layer))){
+            if(Time.time - LastTeleportTime > TeleportationCooldown){
+                transform.position += (other.transform.position - transform.position) * 2;
+                cam.transform.Rotate(new Vector3(0, 180, 0), Space.World);
+                LastTeleportTime = Time.time;
+            }
+        }
     }
     void OnDrawGizmos(){
         Gizmos.color = Color.yellow;

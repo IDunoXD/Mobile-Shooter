@@ -13,7 +13,7 @@ public class EnemiesManager : MonoBehaviour
     const float MinSpawnCooldown = 2;
     Energy playerEnergy;
     Health playerHealth;
-    int kills=0;
+    public int kills=0;
     public static UnityAction<int, int> OnEnemyKill;
     public static UnityAction Ultimate;
     float StartTimerTime;
@@ -22,7 +22,7 @@ public class EnemiesManager : MonoBehaviour
         playerEnergy = player.gameObject.GetComponent<Energy>();
         playerHealth = player.gameObject.GetComponent<Health>();
     }
-    void Srart()
+    void Start()
     {
         StartTimerTime = Time.time;
     }
@@ -70,13 +70,15 @@ public class EnemiesManager : MonoBehaviour
             case 0:
                 break;
             case 1:
-                playerHealth.Heal(100);
+                playerHealth.Heal(playerHealth.MaxHealth);
                 break;
             default:
                 break;
         }
     }
     void KillAllEnemies(){
+        kills += transform.childCount;
+        Debug.Log("kills: " + kills);
         for(int i = 0; i < transform.childCount; i++){
             Destroy(transform.GetChild(i).gameObject);
         }
